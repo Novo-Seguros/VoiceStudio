@@ -260,7 +260,7 @@ def test_full_sign_in(fake_nexus):
     me = client.get("/api/auth/nexus/me")
     assert me.status_code == 200
     assert me.json() == {
-        "email": "ana@novoseguros.com.br",
+        "email": "ana@example.com",
         "name": "Ana Lima",
         "admin": False,
         "system": "voicestudio",

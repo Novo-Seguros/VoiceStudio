@@ -26,7 +26,7 @@ class Clock:
 def identity(*, access_exp: float, refresh: str = "r1", caps=("consume",)) -> NexusIdentity:
     return NexusIdentity(
         sub="sub-1",
-        email="ana@novoseguros.com.br",
+        email="ana@example.com",
         name="Ana Lima",
         capabilities=frozenset(caps),
         access_token="access-secret",
@@ -51,7 +51,7 @@ def test_issue_and_resolve(store, clock):
     assert issued.expires_at == clock.now + SESSION_TTL_SECONDS
     record = store.resolve(issued.token)
     assert record is not None
-    assert record.email == "ana@novoseguros.com.br"
+    assert record.email == "ana@example.com"
     assert record.capabilities == frozenset({"consume"})
     assert len(record.credential_id) == 64
 

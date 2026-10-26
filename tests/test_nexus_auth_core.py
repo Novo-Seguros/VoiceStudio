@@ -126,7 +126,7 @@ def test_identity_from_tokens_maps_profile(env):
         {"access_token": make_token("usar|admin"), "refresh_token": "r1"},
         resolver,
     )
-    assert identity.email == "ana@novoseguros.com.br"
+    assert identity.email == "ana@example.com"
     assert identity.name == "Ana Lima"
     assert identity.capabilities == frozenset({"consume", "admin"})
     assert identity.refresh_token == "r1"

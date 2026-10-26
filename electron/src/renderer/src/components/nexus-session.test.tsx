@@ -61,14 +61,14 @@ it('renders the sign-out button only with a Nexus session', async () => {
 
   act(() =>
     __setNexusMeForTests({
-      email: 'ana@novoseguros.com.br',
+      email: 'ana@example.com',
       name: 'Ana Lima',
       admin: false,
       system: 'voicestudio',
       ponto_script: 'https://nexus.example/v1/ponto/saida/lembrete.js',
     }),
   );
-  const button = screen.getByRole('button', { name: 'Sign out (ana@novoseguros.com.br)' });
+  const button = screen.getByRole('button', { name: 'Sign out (ana@example.com)' });
   await act(async () => {
     fireEvent.click(button);
   });

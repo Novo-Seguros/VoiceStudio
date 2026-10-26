@@ -35,7 +35,7 @@ def make_token(
     return jwt.encode(
         {
             "sub": sub,
-            "email": "ana@novoseguros.com.br",
+            "email": "ana@example.com",
             "aud": aud,
             "iss": iss,
             "iat": now,

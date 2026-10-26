@@ -24,6 +24,7 @@ DELETE /profiles/{profile_id}/consent
 DELETE /projects/{project_id}
 DELETE /pronunciation/{entry_id}
 GET /.well-known/voicestudio-speech
+GET /api/auth/nexus/me
 GET /api/integrations/twilio/state
 GET /api/mcp/bindings
 GET /api/settings/analytics
@@ -57,6 +58,8 @@ GET /audio/{audio_id}.ogg
 GET /audio/{audio_id}.opus
 GET /audio/{audio_id}/quality
 GET /audiobook/jobs
+GET /auth/callback
+GET /auth/login
 GET /batch/download/{job_id}/{lang}
 GET /batch/jobs
 GET /batch/jobs/{job_id}
@@ -177,9 +180,11 @@ GET /v1/models/{model_id:path}
 GET /watermark/status
 PATCH /gallery/voices/{voice_id}
 PATCH /projects/{project_id}
+POST /api/auth/nexus/logout
 POST /api/auth/session
 POST /api/auth/ws-ticket
 POST /api/integrations/twilio/test
+POST /api/nexus-ponto/{acao}
 POST /api/settings/asr-openai-compat/test
 POST /api/settings/hf-mirror/test
 POST /api/settings/hf-token

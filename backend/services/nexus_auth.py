@@ -13,8 +13,10 @@ import hashlib
 import logging
 import os
 import secrets
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from types import ModuleType
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode, urlsplit
 
@@ -175,14 +177,26 @@ def capabilities_from_claims(claims: dict, system_slug: str) -> frozenset[str]:
 
 
 KeyResolver = Callable[[str], object]
-_key_resolver_override: KeyResolver | None = None
 _jwks_clients: dict[str, jwt.PyJWKClient] = {}
+_SEAMS_MODULE_NAME = "_voicestudio_nexus_auth_seams"
+
+
+def _seams() -> ModuleType:
+    """Process-wide test seams. Anchored outside this module (like the session
+    store) so a test that reloads ``services.*`` cannot split them from the
+    copies the app's middleware already imported."""
+    seams = sys.modules.get(_SEAMS_MODULE_NAME)
+    if not isinstance(seams, ModuleType):
+        seams = ModuleType(_SEAMS_MODULE_NAME)
+        seams.key_resolver = None
+        seams.transport = None
+        sys.modules[_SEAMS_MODULE_NAME] = seams
+    return seams
 
 
 def set_key_resolver(resolver: KeyResolver | None) -> None:
     """Test seam: replace JWKS lookups with a fixed key resolver."""
-    global _key_resolver_override
-    _key_resolver_override = resolver
+    _seams().key_resolver = resolver
 
 
 def _jwks_resolver(config: NexusConfig) -> KeyResolver:
@@ -204,7 +218,7 @@ def verify_access_token(
     key_resolver: KeyResolver | None = None,
 ) -> dict:
     """Claims of a Nexus access token minted for this system, or raise."""
-    resolver = key_resolver or _key_resolver_override or _jwks_resolver(config)
+    resolver = key_resolver or _seams().key_resolver or _jwks_resolver(config)
     try:
         key = resolver(token)
     except jwt.PyJWKClientConnectionError as exc:
@@ -276,17 +290,13 @@ async def identity_from_tokens_async(config: NexusConfig, tokens: dict) -> Nexus
     return await asyncio.to_thread(identity_from_tokens, config, tokens)
 
 
-_transport: httpx.AsyncBaseTransport | None = None
-
-
 def set_transport(transport: httpx.AsyncBaseTransport | None) -> None:
     """Test seam: route every Nexus HTTP call through ``transport``."""
-    global _transport
-    _transport = transport
+    _seams().transport = transport
 
 
 def _client(timeout: float = HTTP_TIMEOUT_SECONDS) -> httpx.AsyncClient:
-    return httpx.AsyncClient(transport=_transport, timeout=timeout, follow_redirects=False)
+    return httpx.AsyncClient(transport=_seams().transport, timeout=timeout, follow_redirects=False)
 
 
 async def _post_token(config: NexusConfig, form: dict[str, str]) -> dict:

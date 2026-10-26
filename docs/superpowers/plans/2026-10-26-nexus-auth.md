@@ -85,7 +85,7 @@ def make_token(perms="usar", *, aud="https://voicestudio.example",
                exp_in=3600, key=_KEY, sub="11111111-1111-1111-1111-111111111111"):
     now = int(time.time())
     return jwt.encode({
-        "sub": sub, "email": "ana@novoseguros.com.br", "aud": aud, "iss": iss,
+        "sub": sub, "email": "ana@example.com", "aud": aud, "iss": iss,
         "iat": now, "exp": now + exp_in,
         "app_metadata": {"permissions": perms, "system_slug": slug},
         "user_metadata": {"first_name": "Ana", "last_name": "Lima"},
@@ -931,7 +931,7 @@ async def forward_ponto(config: NexusConfig, acao: str, access_token: str, body:
 
 - [ ] **Step 1: Failing tests** (MockTransport handler routes by URL: token endpoint returns `{"access_token": make_token(...), "refresh_token": "r1"}`; logout records the body; ponto echoes `{"mostrar": false}` with 201):
   - `/auth/login` → 303 to `https://nexus-auth.example/auth/v1/oauth/authorize?...` with `client_id=client-123`, `redirect_uri=https%3A%2F%2Fvoicestudio.example%2Fauth%2Fcallback`, sets `ov_nexus_state`;
-  - full flow: login → callback with the same `state` → 303 `/`, `ov_session` starts with `ovs_nexus_session_`, then `GET /api/auth/nexus/me` → `{"email": "ana@novoseguros.com.br", "name": "Ana Lima", "admin": false, "system": "voicestudio", "ponto_script": "https://nexus.example/v1/ponto/saida/lembrete.js"}`;
+  - full flow: login → callback with the same `state` → 303 `/`, `ov_session` starts with `ovs_nexus_session_`, then `GET /api/auth/nexus/me` → `{"email": "ana@example.com", "name": "Ana Lima", "admin": false, "system": "voicestudio", "ponto_script": "https://nexus.example/v1/ponto/saida/lembrete.js"}`;
   - callback with wrong/reused state → `/?nexus_error=estado_invalido`; `error=access_denied` → `cancelado`; token endpoint 400 → `troca_falhou`; 503 → `nexus_indisponivel`; token without permissions → `sem_acesso`; wrong audience → `token_invalido`;
   - `/api/auth/nexus/me` anonymous remote → 401 `Nexus login required`;
   - logout with `X-VoiceStudio-CSRF: 1` and same origin → 204, cookie expired, Nexus logout got `{"refresh_token": "r1"}`, next `/me` → 401; logout without CSRF header → 403;
