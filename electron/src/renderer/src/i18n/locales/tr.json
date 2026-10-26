@@ -3459,5 +3459,19 @@
     "gateIntro": "Kullanmadan önce aşağıdaki her modelin lisansını kabul edin. Her birini inceleyin, ardından kutusunu işaretleyin.",
     "retryHint": "Lisanslar kabul edildi. Bunu bekleyen bir işlem varsa yeniden başlatın.",
     "detailsFailed": "Lisans ayrıntıları yüklenemedi. Bu pencereyi kapatıp yeniden deneyin."
+  },
+  "nexus": {
+    "sign_in_title": "VoiceStudio'ya giriş yapın",
+    "sign_in_hint": "Devam etmek için Nexus hesabınızı kullanın.",
+    "sign_in": "Nexus ile giriş yap",
+    "sign_out": "Çıkış yap ({{email}})",
+    "error_estado_invalido": "Giriş işlemi tamamlanmadan süresi doldu. Lütfen tekrar deneyin.",
+    "error_troca_falhou": "Nexus bu girişi kabul etmedi. Lütfen tekrar deneyin.",
+    "error_token_invalido": "Nexus, bu sunucunun doğrulayamadığı bir giriş döndürdü. BT ekibiyle iletişime geçin.",
+    "error_sem_acesso": "Nexus hesabınızın VoiceStudio erişimi yok. BT ekibinden bir VoiceStudio rolü isteyin.",
+    "error_nexus_indisponivel": "Nexus şu anda kullanılamıyor. Biraz sonra tekrar deneyin.",
+    "error_configuracao": "Nexus girişi bu sunucuda doğru yapılandırılmamış. BT ekibiyle iletişime geçin.",
+    "error_cancelado": "Giriş iptal edildi.",
+    "error_generic": "Giriş başarısız oldu. Lütfen tekrar deneyin."
   }
 }

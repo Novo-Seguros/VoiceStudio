@@ -3459,5 +3459,19 @@
     "gateIntro": "使用下列每个模型之前，请先接受其许可。请逐一查看，然后勾选对应的复选框。",
     "retryHint": "已接受许可。如有等待中的操作，请重新开始。",
     "detailsFailed": "无法加载许可详情。请关闭此对话框后重试。"
+  },
+  "nexus": {
+    "sign_in_title": "登录 VoiceStudio",
+    "sign_in_hint": "请使用你的 Nexus 账户继续。",
+    "sign_in": "使用 Nexus 登录",
+    "sign_out": "退出登录（{{email}}）",
+    "error_estado_invalido": "登录在完成前已过期，请重试。",
+    "error_troca_falhou": "Nexus 未接受此次登录，请重试。",
+    "error_token_invalido": "Nexus 返回的登录信息无法被此服务器验证，请联系 IT 部门。",
+    "error_sem_acesso": "你的 Nexus 账户无权访问 VoiceStudio，请向 IT 部门申请 VoiceStudio 角色。",
+    "error_nexus_indisponivel": "Nexus 当前不可用，请稍后重试。",
+    "error_configuracao": "此服务器上的 Nexus 登录配置不正确，请联系 IT 部门。",
+    "error_cancelado": "已取消登录。",
+    "error_generic": "登录失败，请重试。"
   }
 }

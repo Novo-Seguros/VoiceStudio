@@ -20,6 +20,7 @@ import { RealtimeEventSync } from '@/hooks/use-realtime-events';
 import { GenerateBudgetSync } from '@/hooks/use-generate-budget-sync';
 import { runRendererTask } from '@/lib/global-error-recovery';
 import { WebAuthGate } from '@/components/web-auth-gate';
+import { NexusSessionSync } from '@/components/nexus-session';
 import { ModelLicenceGate } from '@/features/settings/model-licence-acceptance';
 
 const notifiedUpdates = new Set<string>();
@@ -115,6 +116,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
         <WebAuthGate>
+          {__WEB_DEPLOYMENT__ && <NexusSessionSync />}
           <NativeDictationSync />
           <ModelInstallSync />
           <RealtimeEventSync />

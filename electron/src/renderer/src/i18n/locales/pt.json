@@ -3461,5 +3461,19 @@
     "gateIntro": "Aceite a licença de cada modelo abaixo antes de usá-lo. Revise cada uma e marque a caixa correspondente.",
     "retryHint": "Licenças aceitas. Se algo estava aguardando, inicie novamente.",
     "detailsFailed": "Não foi possível carregar os detalhes da licença. Feche esta janela e tente novamente."
+  },
+  "nexus": {
+    "sign_in_title": "Entrar no VoiceStudio",
+    "sign_in_hint": "Use sua conta do Nexus para continuar.",
+    "sign_in": "Entrar com o Nexus",
+    "sign_out": "Sair ({{email}})",
+    "error_estado_invalido": "O login expirou antes de terminar. Tente novamente.",
+    "error_troca_falhou": "O Nexus não aceitou este login. Tente novamente.",
+    "error_token_invalido": "O Nexus devolveu um login que este servidor não conseguiu verificar. Fale com o TI.",
+    "error_sem_acesso": "Sua conta do Nexus não tem acesso ao VoiceStudio. Peça ao TI um papel no VoiceStudio.",
+    "error_nexus_indisponivel": "O Nexus está indisponível agora. Tente novamente em instantes.",
+    "error_configuracao": "O login pelo Nexus não está configurado corretamente neste servidor. Fale com o TI.",
+    "error_cancelado": "O login foi cancelado.",
+    "error_generic": "Não foi possível entrar. Tente novamente."
   }
 }

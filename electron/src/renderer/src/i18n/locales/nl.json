@@ -3459,5 +3459,19 @@
     "gateIntro": "Accepteer de licentie van elk model hieronder voordat je het gebruikt. Bekijk ze een voor een en vink dan het bijbehorende vakje aan.",
     "retryHint": "Licenties geaccepteerd. Als iets hierop wachtte, start het dan opnieuw.",
     "detailsFailed": "De licentiegegevens konden niet worden geladen. Sluit dit venster en probeer het opnieuw."
+  },
+  "nexus": {
+    "sign_in_title": "Aanmelden bij VoiceStudio",
+    "sign_in_hint": "Gebruik je Nexus-account om verder te gaan.",
+    "sign_in": "Aanmelden met Nexus",
+    "sign_out": "Afmelden ({{email}})",
+    "error_estado_invalido": "Je aanmelding is verlopen voordat ze klaar was. Probeer het opnieuw.",
+    "error_troca_falhou": "Nexus heeft deze aanmelding niet geaccepteerd. Probeer het opnieuw.",
+    "error_token_invalido": "Nexus gaf een aanmelding terug die deze server niet kon controleren. Neem contact op met IT.",
+    "error_sem_acesso": "Je Nexus-account heeft geen toegang tot VoiceStudio. Vraag IT om een VoiceStudio-rol.",
+    "error_nexus_indisponivel": "Nexus is nu niet beschikbaar. Probeer het zo opnieuw.",
+    "error_configuracao": "Aanmelden met Nexus is op deze server niet goed ingesteld. Neem contact op met IT.",
+    "error_cancelado": "Het aanmelden is geannuleerd.",
+    "error_generic": "Aanmelden mislukt. Probeer het opnieuw."
   }
 }

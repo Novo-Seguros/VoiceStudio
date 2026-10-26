@@ -3461,5 +3461,19 @@
     "gateIntro": "Accetta la licenza di ciascun modello qui sotto prima di usarlo. Esaminale una per una, quindi spunta la relativa casella.",
     "retryHint": "Licenze accettate. Se un'operazione era in attesa, avviala di nuovo.",
     "detailsFailed": "Impossibile caricare i dettagli della licenza. Chiudi questa finestra e riprova."
+  },
+  "nexus": {
+    "sign_in_title": "Accedi a VoiceStudio",
+    "sign_in_hint": "Usa il tuo account Nexus per continuare.",
+    "sign_in": "Accedi con Nexus",
+    "sign_out": "Esci ({{email}})",
+    "error_estado_invalido": "L’accesso è scaduto prima di completarsi. Riprova.",
+    "error_troca_falhou": "Nexus non ha accettato questo accesso. Riprova.",
+    "error_token_invalido": "Nexus ha restituito un accesso che questo server non è riuscito a verificare. Contatta l’IT.",
+    "error_sem_acesso": "Il tuo account Nexus non ha accesso a VoiceStudio. Chiedi all’IT un ruolo in VoiceStudio.",
+    "error_nexus_indisponivel": "Nexus non è disponibile al momento. Riprova tra poco.",
+    "error_configuracao": "L’accesso con Nexus non è configurato correttamente su questo server. Contatta l’IT.",
+    "error_cancelado": "L’accesso è stato annullato.",
+    "error_generic": "Accesso non riuscito. Riprova."
   }
 }

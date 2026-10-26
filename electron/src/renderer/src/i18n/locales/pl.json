@@ -3463,5 +3463,19 @@
     "gateIntro": "Zaakceptuj licencję każdego z poniższych modeli, zanim go użyjesz. Przejrzyj każdą z nich, a następnie zaznacz jej pole.",
     "retryHint": "Licencje zaakceptowane. Jeśli coś na nie czekało, uruchom to ponownie.",
     "detailsFailed": "Nie udało się wczytać szczegółów licencji. Zamknij to okno i spróbuj ponownie."
+  },
+  "nexus": {
+    "sign_in_title": "Zaloguj się do VoiceStudio",
+    "sign_in_hint": "Użyj konta Nexus, aby kontynuować.",
+    "sign_in": "Zaloguj się przez Nexus",
+    "sign_out": "Wyloguj ({{email}})",
+    "error_estado_invalido": "Logowanie wygasło przed zakończeniem. Spróbuj ponownie.",
+    "error_troca_falhou": "Nexus nie przyjął tego logowania. Spróbuj ponownie.",
+    "error_token_invalido": "Nexus zwrócił logowanie, którego ten serwer nie mógł zweryfikować. Skontaktuj się z działem IT.",
+    "error_sem_acesso": "Twoje konto Nexus nie ma dostępu do VoiceStudio. Poproś dział IT o rolę w VoiceStudio.",
+    "error_nexus_indisponivel": "Nexus jest teraz niedostępny. Spróbuj ponownie za chwilę.",
+    "error_configuracao": "Logowanie przez Nexus nie jest poprawnie skonfigurowane na tym serwerze. Skontaktuj się z działem IT.",
+    "error_cancelado": "Logowanie zostało anulowane.",
+    "error_generic": "Logowanie nie powiodło się. Spróbuj ponownie."
   }
 }

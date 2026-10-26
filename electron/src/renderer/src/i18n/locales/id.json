@@ -3459,5 +3459,19 @@
     "gateIntro": "Terima lisensi setiap model di bawah sebelum menggunakannya. Tinjau masing-masing, lalu centang kotaknya.",
     "retryHint": "Lisensi diterima. Jika ada tindakan yang menunggunya, jalankan lagi.",
     "detailsFailed": "Detail lisensi tidak dapat dimuat. Tutup dialog ini dan coba lagi."
+  },
+  "nexus": {
+    "sign_in_title": "Masuk ke VoiceStudio",
+    "sign_in_hint": "Gunakan akun Nexus Anda untuk melanjutkan.",
+    "sign_in": "Masuk dengan Nexus",
+    "sign_out": "Keluar ({{email}})",
+    "error_estado_invalido": "Proses masuk kedaluwarsa sebelum selesai. Silakan coba lagi.",
+    "error_troca_falhou": "Nexus tidak menerima proses masuk ini. Silakan coba lagi.",
+    "error_token_invalido": "Nexus mengembalikan data masuk yang tidak dapat diverifikasi server ini. Hubungi tim TI.",
+    "error_sem_acesso": "Akun Nexus Anda tidak memiliki akses ke VoiceStudio. Minta peran VoiceStudio kepada tim TI.",
+    "error_nexus_indisponivel": "Nexus sedang tidak tersedia. Coba lagi sebentar lagi.",
+    "error_configuracao": "Masuk dengan Nexus belum dikonfigurasi dengan benar di server ini. Hubungi tim TI.",
+    "error_cancelado": "Proses masuk dibatalkan.",
+    "error_generic": "Gagal masuk. Silakan coba lagi."
   }
 }

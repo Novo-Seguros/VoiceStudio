@@ -3459,5 +3459,19 @@
     "gateIntro": "Akzeptiere die Lizenz jedes unten aufgeführten Modells, bevor du es verwendest. Prüfe jede einzelne und setze dann das jeweilige Häkchen.",
     "retryHint": "Lizenzen akzeptiert. Falls etwas darauf gewartet hat, starte es erneut.",
     "detailsFailed": "Die Lizenzdetails konnten nicht geladen werden. Schließe diesen Dialog und versuche es erneut."
+  },
+  "nexus": {
+    "sign_in_title": "Bei VoiceStudio anmelden",
+    "sign_in_hint": "Melde dich mit deinem Nexus-Konto an, um fortzufahren.",
+    "sign_in": "Mit Nexus anmelden",
+    "sign_out": "Abmelden ({{email}})",
+    "error_estado_invalido": "Die Anmeldung ist abgelaufen, bevor sie abgeschlossen war. Bitte versuche es erneut.",
+    "error_troca_falhou": "Nexus hat diese Anmeldung nicht akzeptiert. Bitte versuche es erneut.",
+    "error_token_invalido": "Nexus hat eine Anmeldung zurückgegeben, die dieser Server nicht prüfen konnte. Wende dich an die IT.",
+    "error_sem_acesso": "Dein Nexus-Konto hat keinen Zugriff auf VoiceStudio. Bitte die IT um eine VoiceStudio-Rolle.",
+    "error_nexus_indisponivel": "Nexus ist gerade nicht erreichbar. Versuche es gleich noch einmal.",
+    "error_configuracao": "Die Nexus-Anmeldung ist auf diesem Server nicht richtig eingerichtet. Wende dich an die IT.",
+    "error_cancelado": "Die Anmeldung wurde abgebrochen.",
+    "error_generic": "Anmeldung fehlgeschlagen. Bitte versuche es erneut."
   }
 }

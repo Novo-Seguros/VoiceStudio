@@ -3459,5 +3459,19 @@
     "gateIntro": "Hãy chấp nhận giấy phép của từng mô hình bên dưới trước khi sử dụng. Hãy xem từng giấy phép rồi đánh dấu ô tương ứng.",
     "retryHint": "Đã chấp nhận giấy phép. Nếu có thao tác đang chờ, hãy chạy lại.",
     "detailsFailed": "Không thể tải chi tiết giấy phép. Hãy đóng hộp thoại này và thử lại."
+  },
+  "nexus": {
+    "sign_in_title": "Đăng nhập VoiceStudio",
+    "sign_in_hint": "Dùng tài khoản Nexus của bạn để tiếp tục.",
+    "sign_in": "Đăng nhập bằng Nexus",
+    "sign_out": "Đăng xuất ({{email}})",
+    "error_estado_invalido": "Phiên đăng nhập đã hết hạn trước khi hoàn tất. Vui lòng thử lại.",
+    "error_troca_falhou": "Nexus không chấp nhận lần đăng nhập này. Vui lòng thử lại.",
+    "error_token_invalido": "Nexus trả về thông tin đăng nhập mà máy chủ này không xác minh được. Hãy liên hệ bộ phận IT.",
+    "error_sem_acesso": "Tài khoản Nexus của bạn không có quyền truy cập VoiceStudio. Hãy đề nghị bộ phận IT cấp vai trò VoiceStudio.",
+    "error_nexus_indisponivel": "Nexus hiện không khả dụng. Vui lòng thử lại sau giây lát.",
+    "error_configuracao": "Đăng nhập bằng Nexus chưa được cấu hình đúng trên máy chủ này. Hãy liên hệ bộ phận IT.",
+    "error_cancelado": "Đã hủy đăng nhập.",
+    "error_generic": "Đăng nhập không thành công. Vui lòng thử lại."
   }
 }

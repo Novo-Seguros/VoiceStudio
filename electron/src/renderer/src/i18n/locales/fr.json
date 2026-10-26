@@ -3461,5 +3461,19 @@
     "gateIntro": "Acceptez la licence de chaque modèle ci-dessous avant de l'utiliser. Consultez-les une par une, puis cochez la case correspondante.",
     "retryHint": "Licences acceptées. Si une action attendait cette acceptation, relancez-la.",
     "detailsFailed": "Impossible de charger les détails de la licence. Fermez cette boîte de dialogue et réessayez."
+  },
+  "nexus": {
+    "sign_in_title": "Se connecter à VoiceStudio",
+    "sign_in_hint": "Utilisez votre compte Nexus pour continuer.",
+    "sign_in": "Se connecter avec Nexus",
+    "sign_out": "Se déconnecter ({{email}})",
+    "error_estado_invalido": "La connexion a expiré avant la fin. Veuillez réessayer.",
+    "error_troca_falhou": "Nexus n’a pas accepté cette connexion. Veuillez réessayer.",
+    "error_token_invalido": "Nexus a renvoyé une connexion que ce serveur n’a pas pu vérifier. Contactez le service informatique.",
+    "error_sem_acesso": "Votre compte Nexus n’a pas accès à VoiceStudio. Demandez un rôle VoiceStudio au service informatique.",
+    "error_nexus_indisponivel": "Nexus est indisponible pour le moment. Réessayez dans un instant.",
+    "error_configuracao": "La connexion Nexus n’est pas correctement configurée sur ce serveur. Contactez le service informatique.",
+    "error_cancelado": "La connexion a été annulée.",
+    "error_generic": "Échec de la connexion. Veuillez réessayer."
   }
 }

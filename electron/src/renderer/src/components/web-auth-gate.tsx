@@ -6,8 +6,9 @@ import { absoluteApiBase, ApiError, apiFetch } from '@/lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { NexusSignInCard, takeNexusErrorFromUrl } from '@/components/nexus-session';
 
-type AuthMode = 'apikey' | 'pin';
+type AuthMode = 'apikey' | 'pin' | 'nexus';
 
 export function WebAuthGate({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
@@ -16,18 +17,26 @@ export function WebAuthGate({ children }: { children: ReactNode }) {
   const [value, setValue] = useState('');
   const [pending, setPending] = useState(false);
   const [errorStatus, setErrorStatus] = useState<number | null | undefined>();
+  const [nexusError, setNexusError] = useState<string | null>(null);
   const submitting = useRef(false);
 
   useEffect(() => {
     if (!__WEB_DEPLOYMENT__) return;
     const required = (event: Event) => {
       const detail = (event as CustomEvent<{ mode?: string }>).detail;
-      setMode(detail?.mode === 'apikey' ? 'apikey' : 'pin');
+      setMode(detail?.mode === 'nexus' ? 'nexus' : detail?.mode === 'apikey' ? 'apikey' : 'pin');
       setChecked(true);
       setValue('');
       setErrorStatus(undefined);
     };
     window.addEventListener('ov:auth-required', required);
+    // A failed Nexus sign-in comes back as `/?nexus_error=<code>`.
+    const failedNexusSignIn = takeNexusErrorFromUrl();
+    if (failedNexusSignIn !== null) {
+      setNexusError(failedNexusSignIn);
+      setMode('nexus');
+      setChecked(true);
+    }
     void apiFetch('/engines')
       .then(() => setChecked(true))
       .catch((error) => {
@@ -46,6 +55,7 @@ export function WebAuthGate({ children }: { children: ReactNode }) {
     );
   }
   if (!mode) return <>{children}</>;
+  if (mode === 'nexus') return <NexusSignInCard errorCode={nexusError} />;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();

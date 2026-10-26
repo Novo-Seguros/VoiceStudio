@@ -3459,5 +3459,19 @@
     "gateIntro": "使用下列每個模型之前，請先接受其授權。請逐一檢視，然後勾選對應的核取方塊。",
     "retryHint": "已接受授權。如有等待中的操作，請重新開始。",
     "detailsFailed": "無法載入授權詳細資料。請關閉此對話方塊後再試一次。"
+  },
+  "nexus": {
+    "sign_in_title": "登入 VoiceStudio",
+    "sign_in_hint": "請使用你的 Nexus 帳戶繼續。",
+    "sign_in": "使用 Nexus 登入",
+    "sign_out": "登出（{{email}}）",
+    "error_estado_invalido": "登入在完成前已逾時，請再試一次。",
+    "error_troca_falhou": "Nexus 未接受這次登入，請再試一次。",
+    "error_token_invalido": "Nexus 傳回的登入資訊無法由此伺服器驗證，請聯絡 IT 部門。",
+    "error_sem_acesso": "你的 Nexus 帳戶沒有 VoiceStudio 的存取權，請向 IT 部門申請 VoiceStudio 角色。",
+    "error_nexus_indisponivel": "Nexus 目前無法使用，請稍後再試。",
+    "error_configuracao": "此伺服器上的 Nexus 登入設定不正確，請聯絡 IT 部門。",
+    "error_cancelado": "已取消登入。",
+    "error_generic": "登入失敗，請再試一次。"
   }
 }

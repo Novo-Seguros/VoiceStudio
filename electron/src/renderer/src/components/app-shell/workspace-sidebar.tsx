@@ -12,6 +12,7 @@ import { VoicesSidebar } from '@/features/clone/voices-sidebar';
 import { WorkspaceNavigation } from './workspace-menu';
 import { StatusBar } from './status-bar';
 import { SystemNotifications } from './system-notifications';
+import { NexusSignOutButton } from '@/components/nexus-session';
 import { useBackendStatus } from '@/hooks/use-backend-status';
 import { isBackendReachable } from '@shared/utils/backendStage';
 
@@ -108,6 +109,7 @@ export function WorkspaceSidebar() {
                 data-motion="turn"
               />
             </Link>
+            <NexusSignOutButton compact={mac} />
             {mac && <StatusBar compact inline />}
             {!mac && <SystemNotifications enabled={isBackendReachable(backend.stage)} compact />}
           </div>
@@ -169,21 +171,24 @@ export function WorkspaceSidebar() {
             <StatusBar
               footerLeading={
                 mac ? (
-                  <Link
-                    to="/settings"
-                    aria-label={t('nav.settings')}
-                    title={t('nav.settings')}
-                    className={cn(
-                      buttonVariants({ variant: 'ghost', size: 'icon-xs' }),
-                      'workspace-nav-item',
-                    )}
-                  >
-                    <SettingsIcon
-                      className="workspace-nav-icon"
-                      data-tone="settings"
-                      data-motion="turn"
-                    />
-                  </Link>
+                  <>
+                    <Link
+                      to="/settings"
+                      aria-label={t('nav.settings')}
+                      title={t('nav.settings')}
+                      className={cn(
+                        buttonVariants({ variant: 'ghost', size: 'icon-xs' }),
+                        'workspace-nav-item',
+                      )}
+                    >
+                      <SettingsIcon
+                        className="workspace-nav-icon"
+                        data-tone="settings"
+                        data-motion="turn"
+                      />
+                    </Link>
+                    <NexusSignOutButton compact />
+                  </>
                 ) : undefined
               }
             />
@@ -203,7 +208,10 @@ export function WorkspaceSidebar() {
                   />
                   {t('nav.settings')}
                 </Link>
-                <SystemNotifications enabled={isBackendReachable(backend.stage)} />
+                <div className="flex items-center gap-1">
+                  <NexusSignOutButton />
+                  <SystemNotifications enabled={isBackendReachable(backend.stage)} />
+                </div>
               </div>
             )}
           </div>

@@ -3459,5 +3459,19 @@
     "gateIntro": "Accept the licence of each model below before using it. Review each one, then tick its box.",
     "retryHint": "Licences accepted. If something was waiting for them, start it again.",
     "detailsFailed": "The licence details could not be loaded. Close this dialog and try again."
+  },
+  "nexus": {
+    "sign_in_title": "Sign in to VoiceStudio",
+    "sign_in_hint": "Use your Nexus account to continue.",
+    "sign_in": "Sign in with Nexus",
+    "sign_out": "Sign out ({{email}})",
+    "error_estado_invalido": "Your sign-in expired before it finished. Please try again.",
+    "error_troca_falhou": "Nexus did not accept this sign-in. Please try again.",
+    "error_token_invalido": "Nexus returned a sign-in this server could not verify. Contact IT.",
+    "error_sem_acesso": "Your Nexus account has no access to VoiceStudio. Ask IT for a VoiceStudio role.",
+    "error_nexus_indisponivel": "Nexus is unavailable right now. Try again in a moment.",
+    "error_configuracao": "Nexus sign-in is not configured correctly on this server. Contact IT.",
+    "error_cancelado": "Sign-in was cancelled.",
+    "error_generic": "Sign-in failed. Please try again."
   }
 }

@@ -3459,5 +3459,19 @@
     "gateIntro": "Godkänn licensen för varje modell nedan innan du använder den. Granska var och en och markera sedan dess ruta.",
     "retryHint": "Licenserna har godkänts. Om något väntade på dem, starta det igen.",
     "detailsFailed": "Licensinformationen kunde inte läsas in. Stäng dialogrutan och försök igen."
+  },
+  "nexus": {
+    "sign_in_title": "Logga in i VoiceStudio",
+    "sign_in_hint": "Använd ditt Nexus-konto för att fortsätta.",
+    "sign_in": "Logga in med Nexus",
+    "sign_out": "Logga ut ({{email}})",
+    "error_estado_invalido": "Inloggningen gick ut innan den blev klar. Försök igen.",
+    "error_troca_falhou": "Nexus godkände inte den här inloggningen. Försök igen.",
+    "error_token_invalido": "Nexus returnerade en inloggning som den här servern inte kunde verifiera. Kontakta IT.",
+    "error_sem_acesso": "Ditt Nexus-konto har ingen åtkomst till VoiceStudio. Be IT om en roll i VoiceStudio.",
+    "error_nexus_indisponivel": "Nexus är inte tillgängligt just nu. Försök igen om en stund.",
+    "error_configuracao": "Inloggning med Nexus är inte korrekt konfigurerad på den här servern. Kontakta IT.",
+    "error_cancelado": "Inloggningen avbröts.",
+    "error_generic": "Inloggningen misslyckades. Försök igen."
   }
 }

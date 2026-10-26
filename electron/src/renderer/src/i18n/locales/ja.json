@@ -3459,5 +3459,19 @@
     "gateIntro": "下記の各モデルを使う前に、そのライセンスに同意してください。それぞれを確認し、チェックボックスをオンにしてください。",
     "retryHint": "ライセンスに同意しました。待機中の操作があれば、もう一度実行してください。",
     "detailsFailed": "ライセンスの詳細を読み込めませんでした。このダイアログを閉じて、もう一度お試しください。"
+  },
+  "nexus": {
+    "sign_in_title": "VoiceStudio にサインイン",
+    "sign_in_hint": "続行するには Nexus アカウントを使用してください。",
+    "sign_in": "Nexus でサインイン",
+    "sign_out": "サインアウト ({{email}})",
+    "error_estado_invalido": "サインインが完了する前に期限切れになりました。もう一度お試しください。",
+    "error_troca_falhou": "Nexus がこのサインインを受け付けませんでした。もう一度お試しください。",
+    "error_token_invalido": "このサーバーで検証できないサインイン情報が Nexus から返されました。IT 部門にお問い合わせください。",
+    "error_sem_acesso": "お使いの Nexus アカウントには VoiceStudio へのアクセス権がありません。IT 部門に VoiceStudio のロールを依頼してください。",
+    "error_nexus_indisponivel": "現在 Nexus を利用できません。しばらくしてからもう一度お試しください。",
+    "error_configuracao": "このサーバーでは Nexus サインインが正しく設定されていません。IT 部門にお問い合わせください。",
+    "error_cancelado": "サインインがキャンセルされました。",
+    "error_generic": "サインインできませんでした。もう一度お試しください。"
   }
 }

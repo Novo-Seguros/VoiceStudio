@@ -194,7 +194,11 @@ export async function apiFetch(path: string, init?: RequestInit): Promise<Respon
     const detail = error.detail.toLowerCase();
     const adminGate = error.status === 403 && detail.includes('admin api key');
     if (__WEB_DEPLOYMENT__ && (error.status === 401 || adminGate)) {
-      const mode = detail.includes('api key') ? 'apikey' : 'pin';
+      const mode = detail.includes('nexus login')
+        ? 'nexus'
+        : detail.includes('api key')
+          ? 'apikey'
+          : 'pin';
       const currentSession = getAdminSession(absoluteApiBase());
       const staleResponse = mode === 'apikey' && currentSession?.token !== sentSession?.token;
       if (!staleResponse) {

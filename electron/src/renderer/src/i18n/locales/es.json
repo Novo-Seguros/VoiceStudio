@@ -3461,5 +3461,19 @@
     "gateIntro": "Acepta la licencia de cada modelo de abajo antes de usarlo. Revisa cada una y marca su casilla.",
     "retryHint": "Licencias aceptadas. Si algo estaba esperando, vuelve a iniciarlo.",
     "detailsFailed": "No se pudieron cargar los detalles de la licencia. Cierra este diálogo e inténtalo de nuevo."
+  },
+  "nexus": {
+    "sign_in_title": "Inicia sesión en VoiceStudio",
+    "sign_in_hint": "Usa tu cuenta de Nexus para continuar.",
+    "sign_in": "Iniciar sesión con Nexus",
+    "sign_out": "Cerrar sesión ({{email}})",
+    "error_estado_invalido": "El inicio de sesión caducó antes de terminar. Inténtalo de nuevo.",
+    "error_troca_falhou": "Nexus no aceptó este inicio de sesión. Inténtalo de nuevo.",
+    "error_token_invalido": "Nexus devolvió un inicio de sesión que este servidor no pudo verificar. Contacta con TI.",
+    "error_sem_acesso": "Tu cuenta de Nexus no tiene acceso a VoiceStudio. Pide a TI un rol en VoiceStudio.",
+    "error_nexus_indisponivel": "Nexus no está disponible ahora mismo. Inténtalo de nuevo en un momento.",
+    "error_configuracao": "El inicio de sesión con Nexus no está bien configurado en este servidor. Contacta con TI.",
+    "error_cancelado": "Se canceló el inicio de sesión.",
+    "error_generic": "No se pudo iniciar sesión. Inténtalo de nuevo."
   }
 }
