@@ -805,8 +805,8 @@ def _phase_a_finalize() -> None:
         dev_ui_redirect,
         frontend_available,
         frontend_dist_dir,
-        inject_api_base,
         is_valid_public_api_base,
+        render_index_document,
         web_ui_missing_body,
     )
 
@@ -824,12 +824,31 @@ def _phase_a_finalize() -> None:
             )
             _public_api_base = ""
 
-        if _public_api_base and os.path.isfile(_index_path):
+        # Nexus sign-in (Novo Seguros fork): the clock-out reminder script is
+        # served by Nexus, so its origin joins script-src.
+        _nexus_script_origin = ""
+        if nexus_enabled():
+            from services.nexus_auth import NexusConfigError, load_config as _nexus_config
+
+            try:
+                _nexus_script_origin = _nexus_config().api_origin
+            except NexusConfigError:
+                logging.getLogger("omnivoice.api").error(
+                    "NEXUS_CLIENT_ID is set but the Nexus configuration is incomplete."
+                )
+
+        if (_public_api_base or _nexus_script_origin) and os.path.isfile(_index_path):
             from fastapi.responses import HTMLResponse
 
             def _index_with_api_base() -> "HTMLResponse":
                 with open(_index_path, "r", encoding="utf-8") as _fh:
-                    return HTMLResponse(inject_api_base(_fh.read(), _public_api_base))
+                    return HTMLResponse(
+                        render_index_document(
+                            _fh.read(),
+                            api_base=_public_api_base,
+                            script_origin=_nexus_script_origin,
+                        )
+                    )
 
             @app.get("/", include_in_schema=False)
             def _index_root():

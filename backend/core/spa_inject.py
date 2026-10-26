@@ -124,3 +124,26 @@ def inject_api_base(html_doc: str, api_base: str) -> str:
     if "<head>" in html_doc:
         return html_doc.replace("<head>", "<head>" + snippet, 1)
     return snippet + html_doc
+
+
+_ORIGIN_RE = re.compile(r"^https?://[A-Za-z0-9.-]+(?::\d{1,5})?$")
+
+
+def allow_script_origin(html_doc: str, origin: str) -> str:
+    """Allow one exact external script origin under the renderer CSP.
+
+    Used for the Nexus clock-out reminder (Novo Seguros fork). Anything but a
+    bare ``scheme://host[:port]`` leaves the document unchanged.
+    """
+    if not _ORIGIN_RE.match(origin or ""):
+        return html_doc
+    return html_doc.replace("script-src 'self'", f"script-src 'self' {origin}", 1)
+
+
+def render_index_document(html_doc: str, *, api_base: str = "", script_origin: str = "") -> str:
+    """The served ``index.html`` with every runtime override applied."""
+    if api_base:
+        html_doc = inject_api_base(html_doc, api_base)
+    if script_origin:
+        html_doc = allow_script_origin(html_doc, script_origin)
+    return html_doc
