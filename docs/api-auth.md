@@ -21,6 +21,10 @@ env var that exempts trusted callers:
 Loopback traffic (`127.0.0.1`, `::1`, `localhost`) is **never** gated — local
 tools keep working unchanged whichever gate is set.
 
+> **Novo Seguros fork:** the web deployment can instead require a per-person
+> **Nexus sign-in** (`NEXUS_CLIENT_ID`), with consumption/admin rights taken
+> from the person's Nexus role. See [Nexus sign-in](nexus-auth.md).
+
 > VoiceStudio separates **consumption** (TTS, dictation, voices) from
 > **administration** (`/system/*`, `/api/settings/*` — RCE-class). The PIN and
 > trusted networks are *consumption* credentials; the **admin surface is only
