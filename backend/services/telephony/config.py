@@ -1,11 +1,14 @@
-"""Persisted Twilio configuration (local settings store only).
+"""Persisted telephony configuration: Twilio and the SIP trunk (local
+settings store only).
 
-Non-secret fields are plain ``settings`` rows; the Auth Token is Fernet-
-encrypted via :func:`services.settings_store.set_secret`, never returned by
-any API, never logged, and never part of an export. Everything defaults OFF.
+Non-secret fields are plain ``settings`` rows; the Auth Token and the SIP
+password are Fernet-encrypted via :func:`services.settings_store.set_secret`,
+never returned by any API, never logged, and never part of an export.
+Everything defaults OFF.
 """
 from __future__ import annotations
 
+import ipaddress
 import os
 import re
 from dataclasses import dataclass
@@ -278,3 +281,164 @@ def max_call_seconds() -> int:
 
 def webhooks_per_minute() -> int:
     return _int_env("OMNIVOICE_TWILIO_WEBHOOKS_PER_MINUTE", 30, 1, 600)
+
+
+# ── SIP trunk (docs/integrations/sip.md) ────────────────────────────────────
+# Outbound calls through a company PBX instead of Twilio. When enabled, it is
+# the carrier for every outbound call; Twilio keeps serving incoming calls.
+
+_SIP_PREFIX = "integrations.sip."
+SIP_SECRET_NAME = "integrations.sip.password"
+_HOSTNAME_RE = re.compile(
+    r"^(?=.{1,253}$)[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+    r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$"
+)
+#: SIP user part characters a PBX peer name uses (RFC 3261 "unreserved" + a few).
+_SIP_USER_RE = re.compile(r"^[A-Za-z0-9._~+-]{1,64}$")
+SIP_TRANSPORTS = ("udp", "tcp")
+
+
+@dataclass(frozen=True)
+class SipConfig:
+    enabled: bool = False
+    server: str = ""
+    port: int = 5060
+    transport: str = "udp"
+    username: str = ""
+    auth_username: str = ""
+    domain: str = ""
+    local_address: str = ""
+    rtp_port_min: int = 10000
+    rtp_port_max: int = 10999
+
+    def as_dict(self) -> dict:
+        return dict(self.__dict__)
+
+    def account(self, password: str):
+        from services.telephony.sip.ua import SipAccount
+
+        return SipAccount(
+            server=self.server,
+            port=self.port,
+            transport=self.transport,
+            username=self.username,
+            password=password,
+            auth_username=self.auth_username,
+            domain=self.domain,
+            local_address=self.local_address,
+            rtp_port_min=self.rtp_port_min,
+            rtp_port_max=self.rtp_port_max,
+        )
+
+
+def normalize_sip_host(value: str, *, code: str = "invalid_sip_server") -> str:
+    """A hostname or IP literal; '' is allowed (unset)."""
+    value = (value or "").strip().lower()
+    if not value:
+        return ""
+    try:
+        return str(ipaddress.ip_address(value))
+    except ValueError:
+        pass
+    if not _HOSTNAME_RE.match(value):
+        raise ConfigError(code, "Enter a host name or IP address, such as pbx.example.com")
+    return value
+
+
+def normalize_sip_user(value: str, *, code: str = "invalid_sip_username") -> str:
+    value = (value or "").strip()
+    if value and not _SIP_USER_RE.match(value):
+        raise ConfigError(code, "Use the peer name exactly as the PBX defines it (letters, digits, . _ - +)")
+    return value
+
+
+def normalize_sip_transport(value: str) -> str:
+    value = (value or "").strip().lower()
+    if value not in SIP_TRANSPORTS:
+        raise ConfigError("invalid_sip_transport", "The SIP transport is udp or tcp")
+    return value
+
+
+def normalize_port(value: int, *, code: str = "invalid_sip_port", lo: int = 1) -> int:
+    if not isinstance(value, int) or not lo <= value <= 65535:
+        raise ConfigError(code, f"Ports go from {lo} to 65535")
+    return value
+
+
+def normalize_rtp_range(lo: int, hi: int) -> tuple[int, int]:
+    lo = normalize_port(lo, code="invalid_rtp_ports", lo=1024)
+    hi = normalize_port(hi, code="invalid_rtp_ports", lo=1024)
+    if hi - lo < 2:
+        raise ConfigError("invalid_rtp_ports", "The RTP port range needs at least two ports")
+    return lo, hi
+
+
+def load_sip() -> SipConfig:
+    from services import settings_store
+
+    def text(key: str) -> str:
+        return settings_store.get_text(_SIP_PREFIX + key, "") or ""
+
+    def number(key: str, default: int) -> int:
+        try:
+            return int(text(key) or default)
+        except ValueError:
+            return default
+
+    transport = text("transport")
+    return SipConfig(
+        enabled=text("enabled") == "1",
+        server=text("server"),
+        port=number("port", 5060),
+        transport=transport if transport in SIP_TRANSPORTS else "udp",
+        username=text("username"),
+        auth_username=text("auth_username"),
+        domain=text("domain"),
+        local_address=text("local_address"),
+        rtp_port_min=number("rtp_port_min", 10000),
+        rtp_port_max=number("rtp_port_max", 10999),
+    )
+
+
+def save_sip(cfg: SipConfig) -> None:
+    from services import settings_store
+
+    for key in ("server", "transport", "username", "auth_username", "domain", "local_address"):
+        settings_store.set_text(_SIP_PREFIX + key, getattr(cfg, key))
+    for key in ("port", "rtp_port_min", "rtp_port_max"):
+        settings_store.set_text(_SIP_PREFIX + key, str(getattr(cfg, key)))
+    settings_store.set_text(_SIP_PREFIX + "enabled", "1" if cfg.enabled else "0")
+
+
+def sip_password() -> str:
+    from services import settings_store
+
+    return settings_store.get_secret(SIP_SECRET_NAME) or ""
+
+
+def has_sip_password() -> bool:
+    from services import settings_store
+
+    return SIP_SECRET_NAME in settings_store.list_secret_names()
+
+
+def set_sip_password(value: str) -> None:
+    """'' clears the stored password."""
+    from services import settings_store
+
+    settings_store.set_secret(SIP_SECRET_NAME, value.strip())
+
+
+def sip_missing(cfg: SipConfig, password_present: bool) -> list[str]:
+    missing = [name for name in ("server", "username") if not getattr(cfg, name)]
+    if not password_present:
+        missing.append("password")
+    return missing
+
+
+def outbound_carrier() -> str:
+    """Which carrier places outbound calls: the SIP trunk once it is enabled."""
+    try:
+        return "sip" if load_sip().enabled else "twilio"
+    except Exception:  # noqa: BLE001 — settings unreadable: the default
+        return "twilio"

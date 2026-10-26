@@ -6,7 +6,8 @@ under Palash." It speaks in your verified voice or a designed voice, listens to
 the other person, and gives you a transcript, an outcome and a summary.
 
 It builds on the [Twilio integration](twilio.md): the same Twilio account,
-tunnel and telephony listener. Synthesis and speech recognition run on your
+tunnel and telephony listener. Outbound calls can instead go through your own
+PBX with the [SIP trunk](sip.md), with no Twilio account or tunnel. Synthesis and speech recognition run on your
 computer. The conversation text goes to the LLM you configured in
 **Settings → LLM Providers**; choose a local provider (Ollama, LM Studio) to
 keep it on your computer. Twilio carries the call audio.

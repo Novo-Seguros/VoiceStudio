@@ -506,6 +506,8 @@ def count_eligible_profiles() -> int:
 
 
 def readiness() -> list[dict]:
+    if config.outbound_carrier() == "sip":
+        return [_sip_item(), *_agent_items()]
     from services.telephony import gateway
 
     cfg = config.load()
@@ -533,6 +535,26 @@ def readiness() -> list[dict]:
         "detail": f"Calls come from {mask_number(settings.from_number)}" if settings.from_number
         else "Enter your Twilio phone number in call settings",
     })
+    return items + _agent_items()
+
+
+def _sip_item() -> dict:
+    """Over a SIP trunk there is no tunnel and no number to own: the PBX
+    authenticates the peer and picks the outgoing line and caller ID."""
+    sip = config.load_sip()
+    missing = config.sip_missing(sip, config.has_sip_password())
+    return {
+        "id": "sip",
+        "ok": not missing,
+        "detail": f"Calls go out through {sip.server} as {sip.username} ({sip.transport.upper()})"
+        if not missing
+        else f"Add the SIP trunk {', '.join(missing)} in Integrations → SIP",
+    }
+
+
+def _agent_items() -> list[dict]:
+    """What every carrier needs: a brain, ears and a voice that may call."""
+    items = []
     ok, detail = llm_status()
     items.append({"id": "llm", "ok": ok, "detail": detail})
     ok, detail = asr_status()
@@ -556,6 +578,13 @@ def readiness() -> list[dict]:
 def _require_ready(cfg: config.TwilioConfig, settings: config.CallSettings) -> None:
     from services.telephony import gateway
 
+    if config.outbound_carrier() == "sip":
+        if config.sip_missing(config.load_sip(), config.has_sip_password()):
+            raise CallError(409, "not_configured", "Add the SIP trunk server, user and password first")
+        ok, detail = llm_status()
+        if not ok:
+            raise CallError(409, "llm_unavailable", detail)
+        return
     if not cfg.account_sid or not config.has_auth_token():
         raise CallError(409, "not_configured", "Add your Twilio Account SID and Auth Token first")
     if not cfg.enabled or not cfg.public_base_url:
@@ -638,6 +667,19 @@ def create_outbound(
         record=_recording_allowed(settings, text),
     )
     return _register(session)
+
+
+async def place(session: CallSession) -> None:
+    """Place a call created by :func:`create_outbound` with the active carrier.
+
+    The SIP trunk runs the call on this event loop; Twilio is a blocking REST
+    request, so it goes to a thread."""
+    if config.outbound_carrier() == "sip":
+        from services.telephony import sip_calls
+
+        await sip_calls.place(session)
+    else:
+        await asyncio.to_thread(dial, session)
 
 
 def dial(session: CallSession) -> None:
@@ -879,6 +921,11 @@ def hangup(session: CallSession) -> None:
 
     agent = session.agent
     if agent is not None and agent.hangup():
+        return
+    from services.telephony import sip_calls
+
+    if sip_calls.cancel(session.id):
+        # Ringing over SIP: the CANCEL's answer finalizes the session.
         return
     if session.provider_call_id:
         cfg = config.load()
