@@ -86,7 +86,8 @@ nível de acesso vem do papel da pessoa no Nexus. Sem as variáveis do Nexus, na
      valida o JWT, mapeia os níveis, cria a sessão, grava `ov_session`, apaga
      `ov_nexus_state` e redireciona para `/`. Qualquer erro redireciona para
      `/?nexus_error=<codigo>` (`estado_invalido`, `troca_falhou`, `token_invalido`,
-     `sem_acesso`, `nexus_indisponivel`, `configuracao`), sem detalhes sensíveis.
+     `sem_acesso`, `nexus_indisponivel`, `configuracao`, `cancelado`), sem detalhes
+     sensíveis.
    - `GET /api/auth/nexus/me` — `404` com o modo desligado; `401` sem sessão; senão
      `{email, name, admin, system, ponto_script}`.
    - `POST /api/auth/nexus/logout` — revoga a sessão local, chama
