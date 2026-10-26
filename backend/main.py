@@ -739,6 +739,7 @@ def _phase_a_build_inner() -> None:
         settings as settings_router,  # Phase 1 AUTH-03: HF token save/clear/state
         media_tools as media_tools_router,  # Audio tools: ffmpeg/ffprobe/yt-dlp
         auth as auth_router,
+        nexus_auth as nexus_auth_router,  # Nexus sign-in (Novo Seguros fork)
         voice_convert,  # Studio Convert: speech-to-speech via ASR → TTS
     )
     from api.routers import mcp_bindings as _mcp_bindings_router  # noqa: E402
@@ -751,7 +752,7 @@ def _phase_a_build_inner() -> None:
         batch, watermark, events, capture, capture_ws, speech_platform, dictation,
         openai_compat, tts_stream, marketplace, personas, sonitranslate,
         audiobook, longform_jobs, pronunciation, settings_router,
-        media_tools_router, auth_router, _mcp_bindings_router,
+        media_tools_router, auth_router, nexus_auth_router, _mcp_bindings_router,
         _telephony_twilio_router, _calls_router,
     ])
     # Download-acceleration state, once, for triage-from-logs (FDL-03).

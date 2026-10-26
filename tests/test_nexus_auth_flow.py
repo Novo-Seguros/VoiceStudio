@@ -347,7 +347,8 @@ def test_logout_revokes_locally_and_at_nexus(fake_nexus):
     client = _signed_in(_seed("usar"))
     response = client.post("/api/auth/nexus/logout", headers=CSRF_HEADERS)
     assert response.status_code == 204
-    assert "ov_session" not in client.cookies
+    expired = response.headers["set-cookie"]
+    assert expired.startswith("ov_session=") and "Max-Age=0" in expired
     assert json.loads(fake_nexus.requests[-1].content) == {"refresh_token": "r1"}
     assert client.get("/api/auth/nexus/me").status_code == 401
 
