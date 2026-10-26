@@ -393,6 +393,7 @@ from core.auth import (
     principal_for,
     remote_api_key,
 )
+from services.nexus_auth import nexus_enabled
 from core.csrf import SAFE_HTTP_METHODS, cookie_csrf_allowed, origin_allowed
 
 # The 30-router fan-out (`from api.routers import (...)`) is the widest —
@@ -1640,6 +1641,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 _SHELL_PATHS = {"/", "/index.html", "/favicon.ico", "/early-error-capture.js", "/health"}
+_NEXUS_PUBLIC_PATHS = frozenset({"/auth/login", "/auth/callback"})
 
 
 def _is_public_path(path: str) -> bool:
@@ -1651,6 +1653,9 @@ def _is_public_path(path: str) -> bool:
         or path.startswith("/assets/")
         or path.startswith("/favicon")
         or path == "/api/auth/session"
+        # Nexus sign-in (Novo Seguros fork): both routes validate their own
+        # state and answer 404 while the mode is off.
+        or path in _NEXUS_PUBLIC_PATHS
     )
 
 # Paths that answer while deferred startup is still running. The shutdown
@@ -1822,7 +1827,8 @@ class BearerKeyMiddleware:
         if scope["type"] not in ("http", "websocket"):
             return await self.app(scope, receive, send)
         key = remote_api_key() or ""
-        if not key:
+        nexus = nexus_enabled()
+        if not key and not nexus:
             return await self.app(scope, receive, send)
         if scope["type"] == "http" and _is_public_path(scope.get("path", "")):
             return await self.app(scope, receive, send)
@@ -1836,13 +1842,15 @@ class BearerKeyMiddleware:
             PrincipalKind.TRUSTED_NETWORK,
             PrincipalKind.API_KEY,
             PrincipalKind.ADMIN_SESSION,
+            PrincipalKind.NEXUS_SESSION,
         }:
             if scope["type"] == "websocket":
                 # Reject the handshake; 1008 = policy violation.
                 await receive()  # consume websocket.connect
                 await send({"type": "websocket.close", "code": 1008})
                 return
-            resp = JSONResponse({"detail": "API key required"}, status_code=401)
+            detail = "Nexus login required" if nexus else "API key required"
+            resp = JSONResponse({"detail": detail}, status_code=401)
             return await resp(scope, receive, send)
         if (
             scope["type"] == "http"
@@ -1906,6 +1914,14 @@ app.add_middleware(BearerKeyMiddleware)
 # inside CORS so preflights reach CORS and refusals keep their CORS headers.
 from core.browser_guard import BrowserGuardMiddleware
 app.add_middleware(BrowserGuardMiddleware, is_public_path=_is_public_path)
+
+# Nexus sign-in (Novo Seguros fork); both inert unless NEXUS_CLIENT_ID is set.
+# The refresh runs outside the browser guard and the bearer gate, which both
+# resolve the session, so they see the renewed token and permissions. The
+# proxy rewrite is outermost so no gate sees a relayed client as loopback.
+from core.nexus_middleware import NexusRefreshMiddleware, ProxyLoopbackMiddleware
+app.add_middleware(NexusRefreshMiddleware)
+app.add_middleware(ProxyLoopbackMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

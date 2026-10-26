@@ -31,6 +31,7 @@ from core.auth import (
 )
 from core.browser_guard import reject_cross_site_get
 from core.csrf import SAFE_HTTP_METHODS, cookie_csrf_allowed
+from services.nexus_auth import nexus_enabled
 
 _TRUTHY = frozenset({"1", "true", "yes", "on"})
 
@@ -51,7 +52,12 @@ def _server_mode() -> bool:
     non-loopback clients whenever a PIN is set). The desktop build never sets
     this, so its loopback boundary — including denying LAN share guests access
     to admin routes — is unchanged. Read at call time so it stays testable.
+
+    Nexus sign-in (Novo Seguros fork) is a headless server deployment by
+    definition, so turning it on implies server mode.
     """
+    if nexus_enabled():
+        return True
     return os.environ.get("OMNIVOICE_SERVER_MODE", "").strip().lower() in _TRUTHY
 
 
@@ -81,7 +87,7 @@ def _admin_credential_configured(request) -> bool:
     opted out of bare-server discovery. Remote admin then remains closed until
     they configure and present the long API key.
     """
-    if remote_api_key():
+    if remote_api_key() or nexus_enabled():
         return True
     return bool(_configured_pin(request))
 
@@ -97,7 +103,11 @@ def _request_presents_admin_credential(
     PIN and trusted-network principals remain consumption-only.
     """
     principal = principal_for(request)
-    if principal.kind not in {
+    if principal.kind is PrincipalKind.NEXUS_SESSION:
+        # A Nexus session carries the signed-in person's own capabilities.
+        if not principal.allows("admin"):
+            return False
+    elif principal.kind not in {
         PrincipalKind.API_KEY,
         PrincipalKind.ADMIN_SESSION,
     }:
@@ -182,7 +192,7 @@ def require_loopback(request: Request) -> None:
     raise HTTPException(status_code=403, detail="loopback origin required")
 
 
-def _admin_gate_403() -> None:
+def _admin_gate_403(request=None) -> None:
     """Raise the admin-gate 403 with a detail that states what would ACTUALLY
     satisfy the gate. The bundled UI routes any 403 whose detail mentions
     "admin api key" to the API-key login form (frontend ``client.ts``; the
@@ -196,7 +206,15 @@ def _admin_gate_403() -> None:
     the plain loopback detail, because only loopback can use admin there.
     Naming the key in those cases would trap a LAN-share guest in a login
     form that can never succeed (#1213, #1525; PR #1569 review).
+
+    A signed-in Nexus user without the admin permission gets its own detail:
+    signing in again cannot help, only a Nexus role change can.
     """
+    if (
+        request is not None
+        and principal_for(request).kind is PrincipalKind.NEXUS_SESSION
+    ):
+        raise HTTPException(status_code=403, detail="Nexus admin permission required")
     raise HTTPException(
         status_code=403,
         detail=(
@@ -241,7 +259,7 @@ def check_admin(request: Request) -> None:
             return
         if _request_presents_admin_credential(request):
             return
-    _admin_gate_403()
+    _admin_gate_403(request)
 
 
 def require_admin_action(request: Request) -> None:
@@ -261,7 +279,7 @@ def require_admin_action(request: Request) -> None:
         side_effectful_get=True,
     ):
         return
-    _admin_gate_403()
+    _admin_gate_403(request)
 
 
 def require_desktop(request: Request) -> None:
@@ -309,7 +327,10 @@ def require_native_access(request: Request) -> None:
 
 def ws_remote_authorized(websocket) -> bool:
     """Whether the canonical WS principal has a remote admin credential."""
-    return principal_for(websocket).kind in {
+    principal = principal_for(websocket)
+    if principal.kind is PrincipalKind.NEXUS_SESSION:
+        return principal.allows("consume")
+    return principal.kind in {
         PrincipalKind.API_KEY,
         PrincipalKind.ADMIN_SESSION,
     }

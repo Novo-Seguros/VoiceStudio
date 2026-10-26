@@ -18,6 +18,8 @@ from enum import Enum
 from services.admin_sessions import (
     AdminSessionStore,
 )
+from services.nexus_auth import nexus_enabled
+from services.nexus_sessions import NEXUS_SESSION_PREFIX, NexusSessionStore
 
 
 _AUTH_STATE_KEY = "auth_principal"
@@ -35,6 +37,7 @@ class PrincipalKind(str, Enum):
     PIN = "pin"
     API_KEY = "api_key"
     ADMIN_SESSION = "admin_session"
+    NEXUS_SESSION = "nexus_session"
 
 
 class CredentialTransport(str, Enum):
@@ -85,6 +88,12 @@ def _active_admin_session_store() -> AdminSessionStore:
     """Resolve mutable process state at call time so app reloads cannot split it."""
     module = importlib.import_module("services.admin_sessions")
     return module.admin_session_store
+
+
+def _active_nexus_session_store() -> NexusSessionStore:
+    """Nexus counterpart of :func:`_active_admin_session_store`."""
+    module = importlib.import_module("services.nexus_sessions")
+    return module.nexus_session_store
 
 
 def _trusted_networks() -> tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...]:
@@ -234,6 +243,14 @@ def _credential_candidate(connection) -> _CredentialCandidate | None:
     return None
 
 
+def presented_session_token(connection) -> str:
+    """The session credential this connection presents, if any."""
+    candidate = _credential_candidate(connection)
+    if candidate is None or not candidate.allow_session:
+        return ""
+    return candidate.value
+
+
 def presented_api_key(connection) -> str:
     """Compatibility extractor for the durable API-key transports only."""
     candidate = _credential_candidate(connection)
@@ -345,6 +362,18 @@ def _candidate_principal(
             credential_id="api-key",
             transport=candidate.transport,
         )
+    elif candidate.allow_session and candidate.value.startswith(NEXUS_SESSION_PREFIX):
+        # Nexus sign-in (Novo Seguros fork): the token prefix routes the same
+        # ``ov_session`` channel to its own store, and only while the mode is on.
+        if nexus_enabled():
+            record = _active_nexus_session_store().resolve(candidate.value)
+            if record is not None:
+                principal = AuthPrincipal(
+                    PrincipalKind.NEXUS_SESSION,
+                    record.capabilities,
+                    credential_id=record.credential_id,
+                    transport=candidate.transport,
+                )
     elif candidate.allow_session:
         session = store.resolve(candidate.value, configured_key)
         if session is not None:

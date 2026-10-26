@@ -148,7 +148,7 @@ def _configured_hosts() -> tuple[frozenset[str], tuple[str, ...], bool]:
     for entry in (*allowed_origin_values(), *_env_list(_MCP_HOSTS_ENV)):
         if host := _entry_hostname(entry):
             exact.add(host)
-    for name in ("OMNIVOICE_API_URL", "OMNIVOICE_PUBLIC_API_BASE", "OMNIVOICE_BIND_HOST"):
+    for name in ("OMNIVOICE_API_URL", "OMNIVOICE_PUBLIC_API_BASE", "OMNIVOICE_BIND_HOST", "NEXUS_APP_URL"):
         value = os.environ.get(name, "").strip()
         if value and (host := _entry_hostname(value)):
             exact.add(host)
@@ -255,16 +255,18 @@ def _network_authorized_only(connection) -> bool:
     loopback peer, which is how a reverse proxy on this machine (Caddy,
     cloudflared) forwards remote clients with their original ``Host``.
     Anonymous callers of a keyed backend are answered by the API-key gate (a
-    401 the UI uses to prompt for the key). Neither is host-checked, so
+    401 the UI uses to prompt for the key), and with Nexus sign-in on, by the
+    Nexus gate the same way. Neither is host-checked, so
     remote deployments behind arbitrary names keep working with their
     credentials.
     """
     from core.auth import PrincipalKind, presents_valid_credential, principal_for, remote_api_key
+    from services.nexus_auth import nexus_enabled
 
     kind = principal_for(connection).kind
     if kind in {PrincipalKind.LOOPBACK, PrincipalKind.TRUSTED_NETWORK}:
         return not presents_valid_credential(connection)
-    return kind == PrincipalKind.ANONYMOUS and not remote_api_key()
+    return kind == PrincipalKind.ANONYMOUS and not remote_api_key() and not nexus_enabled()
 
 
 class BrowserGuardMiddleware:
