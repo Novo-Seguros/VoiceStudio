@@ -55,7 +55,13 @@ def fake_nexus(monkeypatch):
 
     for name, value in NEXUS_ENV.items():
         monkeypatch.setenv(name, value)
-    for name in ("OMNIVOICE_API_KEY", "OMNIVOICE_SERVER_MODE", "OMNIVOICE_TRUSTED_NETWORKS"):
+    for name in (
+        "OMNIVOICE_API_KEY",
+        "OMNIVOICE_SERVER_MODE",
+        "OMNIVOICE_TRUSTED_NETWORKS",
+        "NEXUS_REDIRECT_URI",
+        "NEXUS_SYSTEM_SLUG",
+    ):
         monkeypatch.delenv(name, raising=False)
     fake = FakeNexus()
     nexus_auth.set_key_resolver(resolver)

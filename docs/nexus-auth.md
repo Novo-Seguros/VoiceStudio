@@ -49,6 +49,7 @@ VoiceStudio users in Nexus.
 | `NEXUS_API_URL` | `https://nexus.novoapp.dev`, without `/v1` |
 | `NEXUS_APP_URL` | `https://voicestudio.novoapp.dev`, without a trailing slash; also the JWT `aud` |
 | `NEXUS_SYSTEM_SLUG` | optional, defaults to `voicestudio` |
+| `NEXUS_REDIRECT_URI` | optional; overrides `{NEXUS_APP_URL}/auth/callback`, for local testing only |
 
 The callback URL is `{NEXUS_APP_URL}/auth/callback`, and it must be registered
 as a redirect URI on the Nexus OAuth client. If `NEXUS_CLIENT_ID` is set but
@@ -61,6 +62,23 @@ are reachable remotely by people with `admin`. `OMNIVOICE_API_KEY` keeps working
 alongside Nexus as a break-glass credential for scripts and MCP clients. The
 share PIN and `OMNIVOICE_TRUSTED_NETWORKS` still exempt their callers, so leave
 them unset on a Nexus deployment.
+
+## Local testing
+
+Nexus sets the token `aud` to the system URL, so `NEXUS_APP_URL` stays the
+production URL even on a developer machine. Register
+`http://localhost:3901/auth/callback` as a redirect URI on the Nexus OAuth
+client, then add one line to the root `.env`:
+
+```
+NEXUS_REDIRECT_URI=http://localhost:3901/auth/callback
+```
+
+Run `bun run dev:web` and open `http://localhost:3901`. When the root `.env`
+has `NEXUS_CLIENT_ID`, the web dev server proxies `/auth/login` and
+`/auth/callback` to the backend and sends `X-Forwarded-For`, so the backend
+treats the browser as remote, the way it treats cloudflared traffic. Without
+that header a loopback browser would skip sign-in.
 
 ## Behind a reverse proxy
 

@@ -81,6 +81,9 @@ class NexusConfig:
     api_url: str = ""
     app_url: str = ""
     system_slug: str = DEFAULT_SYSTEM_SLUG
+    # Overrides only where Nexus sends the browser back (a local dev server);
+    # app_url stays the token audience, which Nexus pins to the system URL.
+    callback_url: str = ""
 
     @property
     def issuer(self) -> str:
@@ -88,7 +91,7 @@ class NexusConfig:
 
     @property
     def redirect_uri(self) -> str:
-        return f"{self.app_url}/auth/callback"
+        return self.callback_url or f"{self.app_url}/auth/callback"
 
     @property
     def authorize_url(self) -> str:
@@ -119,6 +122,15 @@ class NexusConfig:
         return f"{self.api_url}/v1/ponto/saida/{acao}"
 
 
+def _callback_override() -> str:
+    if not os.environ.get("NEXUS_REDIRECT_URI", "").strip():
+        return ""
+    value = _env_url("NEXUS_REDIRECT_URI")
+    if urlsplit(value).path != "/auth/callback":
+        raise NexusConfigError("NEXUS_REDIRECT_URI must end in /auth/callback")
+    return value
+
+
 def load_config() -> NexusConfig:
     client_id = os.environ.get("NEXUS_CLIENT_ID", "").strip()
     anon_key = os.environ.get("NEXUS_SUPABASE_ANON_KEY", "").strip()
@@ -131,6 +143,7 @@ def load_config() -> NexusConfig:
         api_url=_env_url("NEXUS_API_URL"),
         app_url=_env_url("NEXUS_APP_URL"),
         system_slug=os.environ.get("NEXUS_SYSTEM_SLUG", "").strip() or DEFAULT_SYSTEM_SLUG,
+        callback_url=_callback_override(),
     )
 
 

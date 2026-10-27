@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { rewriteDevApiProxyPath } from './src/shared/web-api-routing.ts';
 import { DEFAULT_BACKEND_PORT, DEFAULT_WEB_PORT, PRODUCT_NAME } from '../config/app-config.mjs';
 
@@ -12,6 +12,13 @@ const version = JSON.parse(
   readFileSync(resolve(import.meta.dirname, '../package.json'), 'utf8'),
 ).version;
 const backendPort = process.env.OMNIVOICE_PORT || String(DEFAULT_BACKEND_PORT);
+const backend = `http://127.0.0.1:${backendPort}`;
+// Nexus sign-in (docs/nexus-auth.md), read from the same root .env the backend
+// loads: the backend owns /auth/login and /auth/callback, and X-Forwarded-For
+// makes it treat this browser as remote, the way cloudflared presents it.
+const nexus = Boolean(
+  loadEnv('development', resolve(import.meta.dirname, '..'), 'NEXUS_').NEXUS_CLIENT_ID?.trim(),
+);
 
 export default defineConfig({
   root,
@@ -58,18 +65,23 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api/ws': {
-        target: `http://127.0.0.1:${backendPort}`,
+        target: backend,
         changeOrigin: true,
+        xfwd: nexus,
         rewrite: (path) => path.replace(/^\/api/, ''),
         ws: true,
       },
       '/api': {
-        target: `http://127.0.0.1:${backendPort}`,
+        target: backend,
         changeOrigin: true,
+        xfwd: nexus,
         // Four backend router families genuinely own `/api`; every other
         // renderer request uses `/api` only as the Vite/Electron proxy prefix.
         rewrite: rewriteDevApiProxyPath,
       },
+      ...(nexus && {
+        '^/auth/(login|callback)(\\?|$)': { target: backend, changeOrigin: true, xfwd: true },
+      }),
     },
   },
   build: {

@@ -17,6 +17,7 @@ def env(monkeypatch):
     for name, value in NEXUS_ENV.items():
         monkeypatch.setenv(name, value)
     monkeypatch.delenv("NEXUS_SYSTEM_SLUG", raising=False)
+    monkeypatch.delenv("NEXUS_REDIRECT_URI", raising=False)
 
 
 def test_enabled_follows_client_id(monkeypatch):
@@ -46,6 +47,24 @@ def test_load_config_trims_trailing_slashes(env, monkeypatch):
 )
 def test_load_config_requires_every_value(env, monkeypatch, name):
     monkeypatch.delenv(name)
+    with pytest.raises(nexus.NexusConfigError):
+        nexus.load_config()
+
+
+def test_redirect_uri_override_keeps_the_audience(env, monkeypatch):
+    monkeypatch.setenv("NEXUS_REDIRECT_URI", "http://localhost:3901/auth/callback")
+    config = nexus.load_config()
+    assert config.redirect_uri == "http://localhost:3901/auth/callback"
+    assert config.app_url == "https://voicestudio.example"
+    claims = nexus.verify_access_token(make_token(), config, resolver)
+    assert claims["aud"] == "https://voicestudio.example"
+
+
+@pytest.mark.parametrize(
+    "value", ["localhost:3901/auth/callback", "http://localhost:3901/", "http://localhost:3901/cb"]
+)
+def test_redirect_uri_override_must_reach_the_callback(env, monkeypatch, value):
+    monkeypatch.setenv("NEXUS_REDIRECT_URI", value)
     with pytest.raises(nexus.NexusConfigError):
         nexus.load_config()
 
