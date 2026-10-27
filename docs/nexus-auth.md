@@ -36,8 +36,8 @@ The backend is the OAuth client (PKCE). The browser never sees a Nexus token:
 
 Assign people in **Nexus Admin → Sistemas → voicestudio**. The system uses the
 `GRANULAR` schema and allows one role per person. The roles are `usuario`
-(`usar`), `administrador` (`usar|admin`) and Nexus's own `admin` role, which
-also manages VoiceStudio users in Nexus.
+(`usar`) and Nexus's own `admin` role (`usar|admin`), which also manages
+VoiceStudio users in Nexus.
 
 ## Configuration
 
