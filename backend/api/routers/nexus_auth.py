@@ -27,6 +27,14 @@ _STATE_COOKIE_PATH = "/auth"
 PONTO_ACTIONS = frozenset({"situacao", "registrar", "dispensar"})
 MAX_PONTO_BODY_BYTES = 16 * 1024
 _LOGIN_REQUIRED = "Nexus login required"
+# Sign-in failure → the ``nexus_error`` code the sign-in card explains.
+_CALLBACK_ERRORS: dict[type[Exception], str] = {
+    nexus.NexusConfigError: "configuracao",
+    nexus.NexusUnavailable: "nexus_indisponivel",
+    nexus.NexusRejected: "troca_falhou",
+    nexus.NexusForbidden: "sem_acesso",
+    nexus.NexusTokenError: "token_invalido",
+}
 
 
 def _require_enabled() -> None:
@@ -106,16 +114,11 @@ async def callback(request: Request, code: str = "", state: str = "", error: str
         config = nexus.load_config()
         tokens = await nexus.exchange_code(config, code, verifier)
         identity = await nexus.identity_from_tokens_async(config, tokens)
-    except nexus.NexusConfigError:
-        return _fail(request, "configuracao")
-    except nexus.NexusUnavailable:
-        return _fail(request, "nexus_indisponivel")
-    except nexus.NexusRejected:
-        return _fail(request, "troca_falhou")
-    except nexus.NexusForbidden:
-        return _fail(request, "sem_acesso")
-    except nexus.NexusTokenError:
-        return _fail(request, "token_invalido")
+    except tuple(_CALLBACK_ERRORS) as exc:
+        code = next(c for kind, c in _CALLBACK_ERRORS.items() if isinstance(exc, kind))
+        # The reason never reaches the browser; the log is where ops find it.
+        logger.warning("nexus sign-in failed (%s): %s", code, exc)
+        return _fail(request, code)
     issued = store.issue(identity)
     logger.info("nexus sign-in sub=%s", identity.sub)
     response = _redirect(request, "/")

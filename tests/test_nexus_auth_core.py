@@ -6,9 +6,10 @@ import base64
 import hashlib
 from urllib.parse import parse_qs, urlsplit
 
+import httpx
 import pytest
 
-from nexus_fixtures import NEXUS_ENV, OTHER_KEY, make_token, resolver
+from nexus_fixtures import NEXUS_ENV, OTHER_KEY, jwks, make_token, resolver
 from services import nexus_auth as nexus
 
 
@@ -162,3 +163,65 @@ def test_identity_without_permission_is_forbidden(env):
 def test_identity_requires_a_refresh_token(env):
     with pytest.raises(nexus.NexusTokenError):
         nexus.identity_from_tokens(nexus.load_config(), {"access_token": make_token()}, resolver)
+
+
+class JwksServer:
+    """Nexus's JWKS endpoint behind the shared HTTP transport seam."""
+
+    def __init__(self, status=200, document=None):
+        self.status = status
+        self.document = document if document is not None else jwks()
+        self.requests: list[httpx.Request] = []
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        return httpx.Response(self.status, json=self.document)
+
+
+@pytest.fixture
+def jwks_server(env):
+    server = JwksServer()
+    nexus.set_key_resolver(None)
+    nexus.set_transport(httpx.MockTransport(server))
+    nexus.clear_jwks_cache()
+    yield server
+    nexus.set_transport(None)
+    nexus.clear_jwks_cache()
+
+
+def test_jwks_is_fetched_over_the_shared_client_and_cached(jwks_server):
+    config = nexus.load_config()
+    nexus.verify_access_token(make_token(), config)
+    nexus.verify_access_token(make_token(), config)
+    assert len(jwks_server.requests) == 1
+    request = jwks_server.requests[0]
+    assert str(request.url) == "https://nexus.example/v1/auth/jwks"
+    # Cloudflare in front of Nexus answers 403 to Python-urllib (2026-10-27).
+    assert "urllib" not in request.headers["user-agent"].lower()
+
+
+def test_jwks_refusal_means_nexus_unavailable(jwks_server):
+    jwks_server.status = 403
+    with pytest.raises(nexus.NexusUnavailable):
+        nexus.verify_access_token(make_token(), nexus.load_config())
+
+
+def test_unknown_kid_refetches_once_then_rejects(jwks_server):
+    config = nexus.load_config()
+    nexus.verify_access_token(make_token(), config)
+    with pytest.raises(nexus.NexusTokenError):
+        nexus.verify_access_token(make_token(kid="rotated"), config)
+    with pytest.raises(nexus.NexusTokenError):
+        nexus.verify_access_token(make_token(kid="rotated"), config)
+    assert len(jwks_server.requests) == 1
+
+
+def test_rotated_key_is_picked_up_after_the_refetch_interval(jwks_server, monkeypatch):
+    config = nexus.load_config()
+    nexus.verify_access_token(make_token(), config)
+    jwks_server.document = jwks(("rotated", OTHER_KEY))
+    clock = nexus.time.monotonic() + nexus.JWKS_REFETCH_SECONDS
+    monkeypatch.setattr(nexus.time, "monotonic", lambda: clock)
+    claims = nexus.verify_access_token(make_token(key=OTHER_KEY, kid="rotated"), config)
+    assert claims["sub"]
+    assert len(jwks_server.requests) == 2

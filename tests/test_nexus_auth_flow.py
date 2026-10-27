@@ -317,11 +317,13 @@ def test_callback_needs_the_browser_state_cookie(fake_nexus):
         ),
     ],
 )
-def test_callback_failures(fake_nexus, token_response, code):
+def test_callback_failures(fake_nexus, token_response, code, caplog):
     client = _client()
     query, _ = _start_login(client)
     fake_nexus.token_responses.append(token_response)
-    assert _callback_error(client, {"code": "abc", "state": query["state"]}) == code
+    with caplog.at_level("WARNING", logger="omnivoice.nexus"):
+        assert _callback_error(client, {"code": "abc", "state": query["state"]}) == code
+    assert f"nexus sign-in failed ({code})" in caplog.text
 
 
 def test_callback_cancelled_at_nexus(fake_nexus):

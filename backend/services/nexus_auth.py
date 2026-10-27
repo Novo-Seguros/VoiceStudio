@@ -14,6 +14,8 @@ import logging
 import os
 import secrets
 import sys
+import threading
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from types import ModuleType
@@ -30,6 +32,8 @@ logger = logging.getLogger("omnivoice.nexus")
 
 DEFAULT_SYSTEM_SLUG = "voicestudio"
 JWKS_CACHE_SECONDS = 600
+#: Shortest gap between JWKS fetches triggered by an unknown ``kid``.
+JWKS_REFETCH_SECONDS = 30
 HTTP_TIMEOUT_SECONDS = 10.0
 LOGOUT_TIMEOUT_SECONDS = 5.0
 #: Nexus permission slug → VoiceStudio capabilities (see core.auth).
@@ -38,6 +42,9 @@ PERMISSION_CAPABILITIES: dict[str, frozenset[str]] = {
     "admin": frozenset({"consume", "admin"}),
 }
 _ALGORITHMS = ["ES256", "RS256"]
+# Every Nexus call goes through httpx with this agent: Cloudflare in front of
+# Nexus refuses urllib's default one, which PyJWKClient used to send.
+_HEADERS = {"User-Agent": "VoiceStudio (Nexus sign-in)"}
 
 
 class NexusConfigError(RuntimeError):
@@ -190,7 +197,9 @@ def capabilities_from_claims(claims: dict, system_slug: str) -> frozenset[str]:
 
 
 KeyResolver = Callable[[str], object]
-_jwks_clients: dict[str, jwt.PyJWKClient] = {}
+# JWKS URL → (monotonic fetch time, kid → public key).
+_jwks_cache: dict[str, tuple[float, dict[str, object]]] = {}
+_jwks_lock = threading.Lock()
 _SEAMS_MODULE_NAME = "_voicestudio_nexus_auth_seams"
 
 
@@ -212,17 +221,51 @@ def set_key_resolver(resolver: KeyResolver | None) -> None:
     _seams().key_resolver = resolver
 
 
+def clear_jwks_cache() -> None:
+    with _jwks_lock:
+        _jwks_cache.clear()
+
+
+def _fetch_jwks(url: str) -> dict[str, object]:
+    try:
+        with httpx.Client(
+            transport=_seams().transport, timeout=HTTP_TIMEOUT_SECONDS, headers=_HEADERS
+        ) as client:
+            response = client.get(url)
+        response.raise_for_status()
+        key_set = jwt.PyJWKSet.from_dict(response.json())
+    except (httpx.HTTPError, ValueError, jwt.PyJWTError) as exc:
+        raise NexusUnavailable(f"JWKS fetch failed: {exc}") from exc
+    return {key.key_id: key.key for key in key_set.keys if key.key_id}
+
+
+def _signing_key(url: str, kid: object) -> object:
+    with _jwks_lock:
+        now = time.monotonic()
+        fetched_at, keys = _jwks_cache.get(url, (None, {}))
+        age = None if fetched_at is None else now - fetched_at
+        expired = age is None or age >= JWKS_CACHE_SECONDS
+        rotated = kid not in keys and (age is None or age >= JWKS_REFETCH_SECONDS)
+        if expired or rotated:
+            try:
+                keys = _fetch_jwks(url)
+                _jwks_cache[url] = (now, keys)
+            except NexusUnavailable:
+                if kid not in keys:
+                    raise
+                logger.warning("Nexus JWKS refresh failed; reusing the cached key")
+    key = keys.get(kid)
+    if key is None:
+        raise NexusTokenError("signing key not found")
+    return key
+
+
 def _jwks_resolver(config: NexusConfig) -> KeyResolver:
-    client = _jwks_clients.get(config.jwks_url)
-    if client is None:
-        client = jwt.PyJWKClient(
-            config.jwks_url,
-            cache_jwk_set=True,
-            lifespan=JWKS_CACHE_SECONDS,
-            timeout=int(HTTP_TIMEOUT_SECONDS),
-        )
-        _jwks_clients[config.jwks_url] = client
-    return lambda token: client.get_signing_key_from_jwt(token).key
+    def resolve(token: str) -> object:
+        kid = jwt.get_unverified_header(token).get("kid")
+        return _signing_key(config.jwks_url, kid)
+
+    return resolve
 
 
 def verify_access_token(
@@ -234,10 +277,8 @@ def verify_access_token(
     resolver = key_resolver or _seams().key_resolver or _jwks_resolver(config)
     try:
         key = resolver(token)
-    except jwt.PyJWKClientConnectionError as exc:
-        raise NexusUnavailable("JWKS unreachable") from exc
     except jwt.PyJWTError as exc:
-        raise NexusTokenError("signing key not found") from exc
+        raise NexusTokenError("malformed token header") from exc
     try:
         claims = jwt.decode(
             token,
@@ -303,13 +344,15 @@ async def identity_from_tokens_async(config: NexusConfig, tokens: dict) -> Nexus
     return await asyncio.to_thread(identity_from_tokens, config, tokens)
 
 
-def set_transport(transport: httpx.AsyncBaseTransport | None) -> None:
-    """Test seam: route every Nexus HTTP call through ``transport``."""
+def set_transport(transport: httpx.MockTransport | None) -> None:
+    """Test seam: route every Nexus HTTP call, sync or async, through ``transport``."""
     _seams().transport = transport
 
 
 def _client(timeout: float = HTTP_TIMEOUT_SECONDS) -> httpx.AsyncClient:
-    return httpx.AsyncClient(transport=_seams().transport, timeout=timeout, follow_redirects=False)
+    return httpx.AsyncClient(
+        transport=_seams().transport, timeout=timeout, headers=_HEADERS, follow_redirects=False
+    )
 
 
 async def _post_token(config: NexusConfig, form: dict[str, str]) -> dict:

@@ -19,6 +19,7 @@ SUB = "11111111-1111-1111-1111-111111111111"
 
 KEY = ec.generate_private_key(ec.SECP256R1())
 OTHER_KEY = ec.generate_private_key(ec.SECP256R1())
+KID = "test-key"
 
 
 def make_token(
@@ -30,6 +31,7 @@ def make_token(
     exp_in=3600,
     key=KEY,
     sub=SUB,
+    kid=KID,
 ):
     now = int(time.time())
     return jwt.encode(
@@ -45,8 +47,21 @@ def make_token(
         },
         key,
         algorithm="ES256",
+        headers={"kid": kid},
     )
 
 
 def resolver(_token):
     return KEY.public_key()
+
+
+def jwks(*keys_by_kid):
+    """A JWKS document for ``(kid, private_key)`` pairs, as Nexus serves it."""
+    pairs = keys_by_kid or ((KID, KEY),)
+    to_jwk = jwt.algorithms.ECAlgorithm.to_jwk
+    return {
+        "keys": [
+            {**to_jwk(key.public_key(), as_dict=True), "kid": kid, "alg": "ES256", "use": "sig"}
+            for kid, key in pairs
+        ]
+    }
