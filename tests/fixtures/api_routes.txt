@@ -25,6 +25,7 @@ DELETE /projects/{project_id}
 DELETE /pronunciation/{entry_id}
 GET /.well-known/voicestudio-speech
 GET /api/auth/nexus/me
+GET /api/integrations/sip/state
 GET /api/integrations/twilio/state
 GET /api/mcp/bindings
 GET /api/settings/analytics
@@ -183,6 +184,7 @@ PATCH /projects/{project_id}
 POST /api/auth/nexus/logout
 POST /api/auth/session
 POST /api/auth/ws-ticket
+POST /api/integrations/sip/test
 POST /api/integrations/twilio/test
 POST /api/nexus-ponto/{acao}
 POST /api/settings/asr-openai-compat/test
@@ -310,6 +312,7 @@ POST /v1/audio/transcriptions
 POST /v1/audio/translations
 POST /watermark/detect
 POST /watermark/settings
+PUT /api/integrations/sip/config
 PUT /api/integrations/twilio/config
 PUT /api/mcp/bindings
 PUT /api/settings/analytics

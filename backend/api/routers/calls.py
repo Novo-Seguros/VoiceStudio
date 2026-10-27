@@ -83,7 +83,8 @@ def put_settings(body: _SettingsBody):
 @router.get("/readiness")
 def get_readiness():
     """The guided-setup checklist: ``[{id, ok, detail}]`` for credentials,
-    tunnel, number, llm, asr and voice, in that order."""
+    tunnel, number, llm, asr and voice, in that order — or, with the SIP
+    trunk enabled, sip, llm, asr and voice."""
     return calls.readiness()
 
 
@@ -117,7 +118,7 @@ async def place_call(body: _CallBody):
             disclosure=body.disclosure,
             max_minutes=body.max_minutes,
         )
-        await asyncio.to_thread(calls.dial, session)
+        await calls.place(session)
     except calls.CallError as exc:
         raise _http(exc) from exc
     return {"call": session.as_record(transcript=True)}
